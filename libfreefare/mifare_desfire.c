@@ -1851,7 +1851,95 @@ mifare_desfire_read_records (MifareTag tag, uint8_t file_no, off_t offset, size_
 ssize_t
 mifare_desfire_read_records_ex (MifareTag tag, uint8_t file_no, off_t offset, size_t length, void *data, int cs)
 {
-    return read_data (tag, 0xBB, file_no, offset, length, data, cs);
+    /*
+    * Old Code:
+    * return read_data (tag, 0xBB, file_no, offset, length, data, cs);
+    *
+    * read_data handles length different than mifare_desfire_read_records_ex. So code from read_data was copied and adapted. 
+    */
+    size_t bytes_received = 0;
+
+    ASSERT_ACTIVE (tag);
+    ASSERT_MIFARE_DESFIRE (tag);
+    ASSERT_CS (cs);
+
+    BUFFER_INIT (cmd, 8);
+    BUFFER_INIT (res, MAX_RAPDU_SIZE);
+
+    BUFFER_APPEND (cmd, 0xBB);
+    BUFFER_APPEND (cmd, file_no);
+    BUFFER_APPEND_LE (cmd, offset, 3, sizeof (off_t));
+    BUFFER_APPEND_LE (cmd, length, 3, sizeof (size_t));
+
+    /*
+     * In case no length is provided (whole file is to be read) get the file's
+     * length in order to allocate a large enought buffer for crypto
+     * post-processing.
+     */
+    /*
+    * If length is 0 read all records. Buffer size needs to be NumberOfExistingRecords * RecordSize.
+    * If length is non 0, length is the number of records to be read. Buffer size needs to be length * RecordSize
+    */
+    struct mifare_desfire_file_settings settings;
+    int ret = mifare_desfire_get_file_settings (tag, file_no, &settings);
+    if (ret < 0)
+        return ret;
+    if (!length) {
+        length = settings.settings.linear_record_file.record_size * settings.settings.linear_record_file.current_number_of_records;
+    } else {
+        length = settings.settings.linear_record_file.record_size * length;
+    }
+
+    uint8_t ocs = cs;
+    if ((MIFARE_DESFIRE (tag)->session_key) && (cs | MDCM_MACED)) {
+        switch (MIFARE_DESFIRE (tag)->authentication_scheme) {
+            case AS_LEGACY:
+                break;
+            case AS_NEW:
+                cs = MDCM_PLAIN;
+                break;
+        }
+    }
+    uint8_t *p = mifare_cryto_preprocess_data (tag, cmd, &__cmd_n, 8, MDCM_PLAIN | CMAC_COMMAND);
+    cs = ocs;
+
+    /*
+     * Depending on the communication settings, we might read more bytes than
+     * the actual data length (a MAC or padding padding might follow).  This
+     * can be a problem if the destination buffer is long enouth for the data
+     * but the MAC / padding overflows.
+     *
+     * Create a temporary read buffer to collect all read data, post-process it
+     * through the cryptography code and copy the actual data to the
+     * destination buffer.
+     */
+    uint8_t *read_buffer = malloc (enciphered_data_length (tag, length, 0) + 1);
+
+    do {
+        DESFIRE_TRANSCEIVE2 (tag, p, __cmd_n, res);
+
+        size_t frame_bytes = BUFFER_SIZE (res) - 1;
+        memcpy (read_buffer + bytes_received, res, frame_bytes);
+        bytes_received += frame_bytes;
+
+        p[0] = 0xAF;
+        __cmd_n = 1;
+    } while (0xAF == res[__res_n-1]);
+
+    read_buffer[bytes_received++] = 0x00;
+
+    ssize_t sr = bytes_received;
+    p = mifare_cryto_postprocess_data (tag, read_buffer, &sr, cs | CMAC_COMMAND | CMAC_VERIFY | MAC_VERIFY);
+
+    if (sr > 0)
+        memcpy(data, read_buffer, sr - 1);
+
+    free (read_buffer);
+
+    if (!p)
+        return errno = EINVAL, -1;
+
+    return (sr <= 0) ? sr : sr - 1;
 }
 
 int
