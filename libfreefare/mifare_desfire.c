@@ -40,6 +40,9 @@
 #if defined(HAVE_SYS_ENDIAN_H)
 #  include <sys/endian.h>
 #endif
+#include <stdint.h>
+uint32_t le32toh(uint32_t little_endian_32bits){}
+uint16_t le16toh(uint16_t little_endian_16bits){}
 
 #if defined(HAVE_ENDIAN_H)
 #  include <endian.h>
@@ -54,15 +57,22 @@
 #endif
 
 #include <errno.h>
+#define EIO              5
+#define ENXIO            6
+#define ENOMEM          12
+#define EACCES          13
+#define ENODEV          19
+#define EINVAL          22
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 
 #ifdef WITH_DEBUG
 #  include <libutil.h>
 #endif
 
-#include <openssl/rand.h>
+//#include <openssl/rand.h>
+int RAND_bytes(unsigned char *buf, int num){}
 
 #include <freefare.h>
 #include "freefare_internal.h"

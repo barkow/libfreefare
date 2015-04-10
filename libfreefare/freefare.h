@@ -20,11 +20,17 @@
 #ifndef __FREEFARE_H__
 #define __FREEFARE_H__
 
-#include <sys/types.h>
-
 #include <stdint.h>
 
-#include <nfc/nfc.h>
+typedef int ssize_t;
+typedef int bool;
+typedef int off_t;
+#include <desdummy.h>
+#define true 1
+#define false 0
+#include <stdio.h>
+#include <stdlib.h>
+#include <nfcdummy.h>
 
 #ifdef __cplusplus
     extern "C" {

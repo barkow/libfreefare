@@ -22,7 +22,7 @@
 
 #include "config.h"
 
-#include <openssl/des.h>
+//#include <openssl/des.h>
 
 /*
  * Endienness macros

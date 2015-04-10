@@ -39,6 +39,8 @@
 #if defined(HAVE_ENDIAN_H)
 #  include <endian.h>
 #endif
+#include <stdint.h>
+uint32_t htole32(uint32_t host_32bits){}
 
 #if defined(HAVE_COREFOUNDATION_COREFOUNDATION_H)
 #  include <CoreFoundation/CoreFoundation.h>
@@ -53,12 +55,28 @@
 #  include <sys/types.h>
 #endif
 
-#include <openssl/aes.h>
-#include <openssl/des.h>
+//#include <openssl/aes.h>
+#define AES_MAXNR 14
+struct aes_key_st {
+#ifdef AES_LONG
+    unsigned long rd_key[4 *(AES_MAXNR + 1)];
+#else
+    unsigned int rd_key[4 *(AES_MAXNR + 1)];
+#endif
+    int rounds;
+};
+typedef struct aes_key_st AES_KEY;
+int AES_set_encrypt_key(const unsigned char *userKey, const int bits, AES_KEY *key){return 0;}
+int AES_set_decrypt_key(const unsigned char *userKey, const int bits,	AES_KEY *key){return 0;}
+void AES_encrypt(const unsigned char *in, unsigned char *out,	const AES_KEY *key){}
+void AES_decrypt(const unsigned char *in, unsigned char *out,	const AES_KEY *key){}
+//#include <openssl/des.h>
+#include <desdummy.h>
 
-#include <err.h>
+//#include <err.h>
+void warnx(const unsigned char *message){}
 #include <string.h>
-#include <strings.h>
+//#include <strings.h>
 
 #ifdef WITH_DEBUG
 #  include <libutil.h>

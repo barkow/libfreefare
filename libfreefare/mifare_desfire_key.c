@@ -20,7 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/des.h>
+//#include <openssl/des.h>
+#include <desdummy.h>
 
 #include <freefare.h>
 #include "freefare_internal.h"

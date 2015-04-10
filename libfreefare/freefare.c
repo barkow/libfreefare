@@ -38,7 +38,7 @@ struct supported_tag supported_tags[] = {
     { DESFIRE,      "Mifare DESFire",               0x20, 5, 4, { 0x75, 0x77, 0x81, 0x02 /*, 0xXX */ }, NULL},
     { DESFIRE,      "Cyanogenmod card emulation",   0x60, 4, 3, { 0x78, 0x33, 0x88 /*, 0xXX */ }, NULL},
     { DESFIRE,      "Android HCE",                  0x60, 4, 3, { 0x78, 0x80, 0x70 /*, 0xXX */ }, NULL},
-    { ULTRALIGHT_C, "Mifare UltraLightC",           0x00, 0, 0, { 0x00 }, is_mifare_ultralightc_on_reader },
+    //{ ULTRALIGHT_C, "Mifare UltraLightC",           0x00, 0, 0, { 0x00 }, is_mifare_ultralightc_on_reader },
     { ULTRALIGHT,   "Mifare UltraLight",            0x00, 0, 0, { 0x00 }, NULL },
 };
 
@@ -74,14 +74,14 @@ freefare_tag_new (nfc_device *device, nfc_iso14443a_info nai)
     switch (tag_info->type) {
     case CLASSIC_1K:
     case CLASSIC_4K:
-	tag = mifare_classic_tag_new ();
+	//tag = mifare_classic_tag_new ();
 	break;
     case DESFIRE:
 	tag = mifare_desfire_tag_new ();
 	break;
     case ULTRALIGHT:
     case ULTRALIGHT_C:
-	tag = mifare_ultralight_tag_new ();
+	//tag = mifare_ultralight_tag_new ();
 	break;
     }
 
@@ -214,14 +214,14 @@ freefare_free_tag (MifareTag tag)
         switch (tag->tag_info->type) {
         case CLASSIC_1K:
         case CLASSIC_4K:
-            mifare_classic_tag_free (tag);
+            //mifare_classic_tag_free (tag);
             break;
         case DESFIRE:
             mifare_desfire_tag_free (tag);
             break;
         case ULTRALIGHT:
         case ULTRALIGHT_C:
-            mifare_ultralight_tag_free (tag);
+            //mifare_ultralight_tag_free (tag);
             break;
         }
     }
