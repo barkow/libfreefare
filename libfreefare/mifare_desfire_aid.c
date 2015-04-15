@@ -49,6 +49,7 @@
 #endif
 
 #include <errno.h>
+#define EINVAL          22 
 #include <stdlib.h>
 #include <string.h>
 
