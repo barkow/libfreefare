@@ -37,3 +37,4 @@ examples/mifare-ultralight-info
 test/test-suite.log
 test/run-test.sh.log
 test/run-test.sh.trs
+*.lst
